@@ -168,21 +168,32 @@ def combined_loss(input, target, alpha=0.5):
 
 
 def find_lr():
+    """
+    自動尋找一個適當的學習率（learning rate）
+    1.) 模型會用 不同的學習率 進行一小段訓練（通常只跑一次 epoch 或更少）。
+    2.) 這些學習率會以指數方式增加（如從 1e-7 → 1e-1）。
+    3.) 對每個學習率，記錄loss的變化，最終會畫出一張 learning rate vs. loss 的圖
+    """
     # get dataloader
-    dls = get_dls(args)
+    dls = get_dls(args) # 載入訓練資料。
     model = get_model(dls.vars, args)
 
     # get loss
-    #loss_func = torch.nn.MSELoss(reduction='mean')
-    loss_func = torch.nn.L1Loss(reduction='mean')
-    #loss_func=combined_loss
+    # Ex. loss_func = torch.nn.MSELoss(reduction='mean') 或 loss_func=combined_loss
+    loss_func = torch.nn.L1Loss(reduction='mean') # 主要 loss function 為 L1Loss，也可改成 MSELoss, HuberLoss, combined_loss。
+                                                  # L1Loss 也叫作 MAE（Mean Absolute Error）。
+    
     # get callbacks
-    cbs = [RevInCB(dls.vars)] if args.revin else []
-    #cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
+    cbs = [RevInCB(dls.vars)] if args.revin else [] # 使用 callback 記錄訓練過程 
+                                                    # args.revin => 判斷是否啟用 RevIN 功能。
+                                                    # RevInCB(dls.vars) => 建立一個 RevIN Callback 實例，傳入變數資訊。
+                                                    # 在 輸入前 對資料做 normalization，在 模型輸出後 還原（denormalize）預測值。
+    #cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)] # Patch-based 時間序列切片
+
     # define learner
-    learn = Learner(dls, model, loss_func, cbs=cbs)  #cbs=cbs
+    learn = Learner(dls, model, loss_func, cbs=cbs)  # 使用 Learner() 包裝模型、資料集與 loss function。
     # fit the data to the model
-    return learn.lr_finder()
+    return learn.lr_finder() # 呼叫 .lr_finder() 來跑這個學習率掃描流程，不用手動設定學習率。
 
 
 def train_func(lr=args.lr):
