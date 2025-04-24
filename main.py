@@ -59,69 +59,73 @@ from utils import load_checkpoint, load_pretrained, save_checkpoint, NativeScale
 
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--n1', type=int, default=128, help='First Embedded representation')  #256
-parser.add_argument('--n2', type=int, default=256, help='Second Embedded representation')
-parser.add_argument('--ch_ind', type=int, default=1, help='Channel Independence; True 1 False 0')
-parser.add_argument('--d_state', type=int, default=128, help='d_state parameter of Mamba')  #256
-parser.add_argument('--dconv', type=int, default=2, help='d_conv parameter of Mamba')
-parser.add_argument('--e_fact', type=int, default=2, help='expand factor parameter of Mamba')
-parser.add_argument('--residual', type=int, default=1, help='Residual Connection; True 1 False 0')
+parser = argparse.ArgumentParser() # 解析命令列參數（Command-line arguments）、控制所有訓練與測試參數。
 
-parser.add_argument('--model_name2', type=str, default='xLSTMTime', help='model_name2')
-# IntegratedModel   model1 model2 dlinear
-parser.add_argument('--dset', type=str, default='ettm1', help='dataset name')
-parser.add_argument('--context_points', type=int, default=512, help='sequence length')
-parser.add_argument('--target_points', type=int, default=96, help='forecast horizon')
-parser.add_argument('--batch_size', type=int, default=64, help='batch size')
-parser.add_argument('--num_workers', type=int, default=1, help='number of workers for DataLoader')
-parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
-
-parser.add_argument('--features', type=str, default='M', help='for multivariate model or univariate model')
-parser.add_argument('--use_time_features', type=int, default=1, help='whether to use time features or not')
-# Patch
-parser.add_argument('--patch_len', type=int, default=12, help='patch length')
-parser.add_argument('--stride', type=int, default=12, help='stride between patch')
-# RevIN
-parser.add_argument('--revin', type=int, default=1, help='reversible instance normalization')
-# Model args
-parser.add_argument('--n_layers', type=int, default=3, help='number of Transformer layers')
-# parser.add_argument('--n_heads', type=int, default=16, help='number of Transformer heads')
-parser.add_argument('--d_model', type=int, default=256, help='Transformer d_model')
-#parser.add_argument('--d_ff', type=int, default=256, help='Tranformer MLP dimension')
-parser.add_argument('--dropout', type=float, default=0.2, help='Transformer dropout')
-parser.add_argument('--head_dropout', type=float, default=0, help='head dropout')
-# Optimization args
-parser.add_argument('--n_epochs', type=int, default=100, help='number of training epochs')
-parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
-# model id to keep track of the number of models saved
-parser.add_argument('--model_id', type=int, default=1, help='id of the saved model')
-parser.add_argument('--model_type', type=str, default='based_model', help='for multivariate model or univariate model')
+# TODO 【1】確實有用到的重要核心參數（✅代表有用到。）
 # training
-parser.add_argument('--is_train', type=int, default=0, help='training the model')   # 1: train, 0: test
+parser.add_argument('--is_train', type=int, default=0, help='training the model') # 控制是否訓練或測試。( 1: train, 0: test ) ✅
+parser.add_argument('--context_points', type=int, default=512, help='sequence length') # 輸入序列長度（如 336） ✅
+parser.add_argument('--target_points', type=int, default=96, help='forecast horizon') # 預測序列長度、預測步數（如 96） ✅
+parser.add_argument('--batch_size', type=int, default=64, help='batch size') # DataLoader批次大小，在 get_dls() 會用到。 ✅
 
-#parser = argparse.ArgumentParser(description='Swin Transformer training and evaluation script', add_help=False)
+parser.add_argument('--dset', type=str, default='ettm1', help='dataset name') # 資料集名稱（如 ettm1） ✅
+parser.add_argument('--model_name2', type=str, default='xLSTMTime', help='model_name2') # 模型命名，在 args.save_model_name 會用到。 ✅
 
-#parser.add_argument('Swin Transformer training and evaluation script', add_help=False)
-parser.add_argument('--cfg', type=str, required=False, metavar="FILE", help='path to config file', )
-parser.add_argument(
-    "--opts",
-    help="Modify config options by adding 'KEY VALUE' pairs. ",
-    default=None,
-    nargs='+',
-)
+parser.add_argument('--model_id', type=int, default=1, help='id of the saved model') # 模型版本號（便於存檔），在 args.save_model_name 會用到。
+# Optimization args
+parser.add_argument('--n_epochs', type=int, default=100, help='number of training epochs') # 訓練總迭代次數，在 learn.fit_one_cycle 會用到。
+parser.add_argument('--lr', type=float, default=1e-3, help='learning rate') # 學習率（可被 find_lr() 覆蓋）
+parser.add_argument('--n2', type=int, default=256, help='Second Embedded representation') # 要傳入 xLSTMBlockStack 的嵌入維度（可理解為 embedding_dim），用在 model.py。 ✅
 
+parser.add_argument('--use_time_features', type=int, default=1, help='whether to use time features or not') # 是否加入時間欄位特徵，用在 datautils.py。✅
+parser.add_argument('--features', type=str, default='M', help='for multivariate model or univariate model') # 特徵類型（M: multivariate 多變量、 S: Single單變量），用在 datautils.py。✅
+                                                                                                            # 單變量（S）=> 每筆資料只有一種特徵（只有一個欄位要預測）
+                                                                                                            # 多變量（M）=> 每筆資料有多種特徵（同時觀察/預測多個欄位）
+                                                                                                            # NOTE MS -> 多變量預測單變量（multi→single）。
+parser.add_argument('--num_workers', type=int, default=1, help='number of workers for DataLoader') # DataLoader 多執行緒設定，用在 datautils.py。✅
+
+# TODO 【2】定義了但目前未被使用的參數（可能是保留、兼容或暫未實作）（❌代表未用到。）
+# 模型初始化
+parser.add_argument('--n1', type=int, default=128, help='First Embedded representation')  #256 # 原意應為第一層 embedding，未使用。 ❌
+# 原本可能是用於 Mamba 模型的設定，但目前 xlstm 未使用
+parser.add_argument('--d_state', type=int, default=128, help='d_state parameter of Mamba')  #256 ❌
+parser.add_argument('--dconv', type=int, default=2, help='d_conv parameter of Mamba') # ❌
+parser.add_argument('--e_fact', type=int, default=2, help='expand factor parameter of Mamba') # ❌
+parser.add_argument('--residual', type=int, default=1, help='Residual Connection; True 1 False 0') # 殘差設定❌
+# 和 Transformer 架構相關，原始碼中未被 xlstm 調用。
+parser.add_argument('--n_layers', type=int, default=3, help='number of Transformer layers') # ❌
+parser.add_argument('--d_model', type=int, default=256, help='Transformer d_model') # ❌
+parser.add_argument('--head_dropout', type=float, default=0, help='head dropout') # 沒有實際實作❌
+parser.add_argument('--dropout', type=float, default=0.2, help='Transformer dropout')
+# parser.add_argument('--d_ff', type=int, default=256, help='Tranformer MLP dimension')
+# parser.add_argument('--n_heads', type=int, default=16, help='number of Transformer heads')
+# parser = argparse.ArgumentParser(description='Swin Transformer training and evaluation script', add_help=False)
+# parser.add_argument('Swin Transformer training and evaluation script', add_help=False)
+# 保留給 config 檔用，但目前未使用。
+parser.add_argument('--cfg', type=str, required=False, metavar="FILE", help='path to config file') # ❌
+parser.add_argument("--opts", help="Modify config options by adding 'KEY VALUE' pairs. ", default=None, nargs='+') # ❌
+# 可能在多模型版本中有用，但目前 xlstm 還沒切換架構
+parser.add_argument('--model_type', type=str, default='based_model', help='for multivariate model or univariate model') # 多架構選擇時可用，目前僅支援 xLSTM。 ❌
+parser.add_argument('--scaler', type=str, default='standard', help='scale the input data') # 特徵標準化方法，未用到。❌
+parser.add_argument('--ch_ind', type=int, default=1, help='Channel Independence; True 1 False 0') # 是否讓每個通道（feature）獨立建模，而不是共享參數或進行聯合建模。 #可能是為 Mamba 模型預留的❌
+
+# TODO 【3】取決於是否啟用某些功能的參數
+parser.add_argument('--revin', type=int, default=1, help='reversible instance normalization') # 啟用 RevIN（可逆標準化），在 RevInCB 有用到。 # cbs = [RevInCB(dls.vars)] if args.revin else []
+                                                                                              # RevIN（Reversible Instance Normalization）可逆標準化技術 => 讓模型在統一的數值世界裡學習，學完再把預測翻譯回原本的語言。
+# Patch 時間補丁設定（用在 PatchCB），用在部分 callback 或未啟用。
+# patch補丁：把一整段長時間序列，切成一小段一小段的區塊（時間片段）來處理。
+parser.add_argument('--patch_len', type=int, default=12, help='patch length') # 每段看多長。 目前未啟用 PatchCB。❌
+parser.add_argument('--stride', type=int, default=12, help='stride between patch') # 每次滑動多少秒 目前未啟用 PatchCB。 ❌
 
 args = parser.parse_args()
-#print('args:', args)
-#args.save_model_name = 'patchtst_supervised'+'_cw'+str(args.context_points)+'_tw'+str(args.target_points) +'_IMAGE_SIZE'+str(args.IMAGE_SIZE)+'_NUM_CLASSES'+str(args.NUM_CLASSES) +'_patch'+str(args.patch_len) + '_stride'+str(args.stride)+'_epochs'+str(args.n_epochs) + '_model' + str(args.model_id)
-#args.save_path = 'saved_models/' + args.dset + '/patchtst_supervised/' + args.model_type + '/'
-#if not os.path.exists(args.save_path): os.makedirs(args.save_path)
+print('args:', args)
+
+# 設定儲存模型的名稱與路徑
 args.save_model_name = str(args.model_name2) + '_cw' + str(args.context_points) + '_tw' + str(
     args.target_points) + '_patch' + str(args.patch_len) + '_stride' + str(args.stride) + '_epochs' + str(
-    args.n_epochs) + '_model' + str(args.model_id)
-args.save_path = 'saved_models/' + args.dset  #/My model/' + args.model_type + '/'
-if not os.path.exists(args.save_path): os.makedirs(args.save_path)
+    args.n_epochs) + '_model' + str(args.model_id) # 模型名稱
+args.save_path = 'saved_models/' + args.dset  # 儲存模型位置路徑
+if not os.path.exists(args.save_path): os.makedirs(args.save_path) # 建立資料夾
 
 configs = args
 
