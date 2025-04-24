@@ -297,6 +297,27 @@ def plot_feature_actual_vs_predicted(actual, predicted, feature_idx):
     plt.show()
 
 
+def save_arguments(out_dir, args):
+    """
+    將 args（可以是 argparse.Namespace 或 dict）儲存為 JSON 格式，
+    存在指定的 out_dir 路徑下，檔名為 params.json。
+    """
+    os.makedirs(out_dir, exist_ok=True)  # 若資料夾不存在則建立
+    path_arguments = os.path.join(out_dir, 'params.json')
+
+    # 將 Namespace 轉為 dict（若已是 dict 就直接使用）
+    if hasattr(args, '__dict__'):
+        args_dict = vars(args)
+    else:
+        args_dict = args
+
+    with open(path_arguments, mode="w") as f:
+        json.dump(args_dict, f, indent=4)
+
+    print(f"✅ 已儲存參數至 {path_arguments}")
+
+
+
 if __name__ == '__main__':
 
     if args.is_train:
