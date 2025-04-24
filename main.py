@@ -151,13 +151,13 @@ def get_model(c_in, args):
     # +1：加上第一次切（從 0 開始）
     # -- print('number of patches:', num_patch) # get number of patches  EX. 模型會把一筆長為 336 的序列切成 28 段，每段 12 個時間點。
 
-    # todo get model
+    # todo: get model
     model = xlstm(configs, enc_in=c_in) # 把特徵數交給模型
                                         # xlstm() 是主模型結構，搭配 xLSTMBlockStack。
     return model
 
 
-def combined_loss(input, target, alpha=0.5):
+def combined_loss(input, target, alpha=0.5): # * 沒有用到
     """
     A combined loss function that computes a weighted sum of MSELoss and L1Loss.
     `alpha` is the weight for MSELoss and (1-alpha) is the weight for L1Loss.
