@@ -237,16 +237,26 @@ def train_func(lr=args.lr):
 
 
 def test_func():
-    weight_path = args.save_path + '/' + args.save_model_name + '.pth'
+    """
+    測試與視覺化（圖形化預測效果）
+    """
+    weight_path = args.save_path + '/' + args.save_model_name + '.pth' # 載入權重 .pth
     # get dataloader
-    dls = get_dls(args)
-    model = get_model(dls.vars, args)
-    #model = torch.load(weight_path)
+    dls = get_dls(args) # 載入測試集資料。
+    model = get_model(dls.vars, args) # 第一階段：初始化模型架構、搭建出模型結構。
+    # model = torch.load(weight_path) # 需要自己負責載入權重與設為推論模式，還要確保device匹配。
+
     # get callbacks
     cbs = [RevInCB(dls.vars)] if args.revin else []
-    #cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
-    learn = Learner(dls, model, cbs=cbs)  #cbs=cbs
-    out = learn.test(dls.test, weight_path=weight_path, scores=[mse, mae])  # out: a list of [pred, targ, score_values]
+    #cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)] # Patch-based 時間序列切片
+
+    learn = Learner(dls, model, cbs=cbs) # 第二階段：建立 Learner 實例。
+    out = learn.test(dls.test, weight_path=weight_path, scores=[mse, mae])  # 第三階段：載入 .pth 權重
+                                                                            # out: a list of [pred, targ, score_values]
+                                                                            # preds: 模型預測出來的值。
+                                                                            # targs = target（也就是 "ground truth"），測試資料中的「實際答案」。
+                                                                            # scores: 評估結果，例如 MSE 和 MAE。
+                                                                            
     return out
 
 
