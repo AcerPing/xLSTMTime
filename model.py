@@ -176,7 +176,7 @@ class xlstm(torch.nn.Module):
                     # self.mm = nn.Linear(features, embedding_dim)
                     # 線性轉為 embedding 維度（features → embedding_dim）
                     # linear layer（又叫 dense layer）全連接層，用來進行資料的維度轉換或特徵投影。
-        print(f'mm線性轉換: {x.shape} \n')
+        print(f'mm線性轉換: {x.shape} \n') # 形狀為 (batch_size, features, embedding_dim)
 
         
         #x = self.batch_norm(x) # ?? 不一定需要，但可考慮加入來補強模型訓練初期的穩定性。
