@@ -260,17 +260,15 @@ def test_func():
     return out
 
 
-
-
-
 def plot_feature_actual_vs_predicted(actual, predicted, feature_idx):
     """
     Plot the actual vs predicted values for a specific feature for the first sequence.
+    將每個特徵畫圖，繪製實際值與預測值圖表，用於觀察預測表現。
 
-    Parameters:
-    - actual (np.array or torch.Tensor): Array of actual values.
-    - predicted (np.array or torch.Tensor): Array of predicted values.
-    - feature_idx (int): Index of the feature to plot.
+    Parameters: （紅色：預測、藍色：真實）
+    - actual (np.array or torch.Tensor): Array of actual values. 真實目標資料
+    - predicted (np.array or torch.Tensor): Array of predicted values. 預測出來的資料
+    - feature_idx (int): Index of the feature to plot. 特徵索引
     """
 
     if isinstance(actual, torch.Tensor):
@@ -279,13 +277,13 @@ def plot_feature_actual_vs_predicted(actual, predicted, feature_idx):
     if isinstance(predicted, torch.Tensor):
         predicted = predicted.cpu().numpy()
 
-    ## Selecting the feature across all time steps
-    #actual_feature = actual[0:, feature_idx]
-    #predicted_feature = predicted[0:, feature_idx]
+    # todo: Select the first sequence for the given feature index （畫第 0 筆資料中，第 feature_idx 個特徵的所有時間點。）
+    # 取出三維張量中特定序列與特徵的預測結果。假設資料維度為 actual.shape = (batch_size, target_points, num_features) 
+    # 舉例：actual.shape = (64, 96, 7)，有 64 條不同序列、每條序列預測 96 個時間點、每個時間點包含 7 個特徵。
+    actual_feature = actual[0, :, feature_idx] # 選擇第 1 條序列（通常我們只拿來視覺化其中一筆），取出這筆序列的 所有時間步（96 個點），取出指定的某個特徵。
+    predicted_feature = predicted[0, :, feature_idx] # 畫第 0 筆資料中，第 feature_idx 個特徵的所有時間點。
 
-    # Select the first sequence for the given feature index
-    actual_feature = actual[0, :, feature_idx]
-    predicted_feature = predicted[0, :, feature_idx]
+    # todo: 對「所有 batch 的同一個特徵」在每個時間點上進行平均，表示「平均趨勢線」，得到「這個特徵的整體預測趨勢 vs 真實趨勢」。
     #actual_feature = np.mean(actual[: , : ,feature_idx ], axis=0 )
     #predicted_feature = np.mean(predicted[: , : ,feature_idx ], axis=0)
 
