@@ -127,7 +127,7 @@ args.save_model_name = str(args.model_name2) + '_cw' + str(args.context_points) 
 args.save_path = 'saved_models/' + args.dset  # 儲存模型位置路徑
 if not os.path.exists(args.save_path): os.makedirs(args.save_path) # 建立資料夾
 
-configs = args
+configs = args # 全域變數（global variable），只要在 get_model() 裡沒有重新定義名為 configs 的區域變數，Python 就會使用外層的 全域變數 configs。
 
 
 def get_model(c_in, args):
