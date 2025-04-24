@@ -132,16 +132,28 @@ configs = args # 全域變數（global variable），只要在 get_model() 裡�
 
 def get_model(c_in, args):
     """
-    c_in: number of input variables
+    產出模型結構
+    -- c_in: number of input variables （輸入特徵數，也就是 features 數量。 enc_in = c_in = features）
+    -- 若想導入其他模型（如 LSTM、Transformer），可以直接改寫這裡。
     """
 
-    #get number of patches
-    num_patch = (max(args.context_points, args.patch_len) - args.patch_len) // args.stride + 1
-    print('number of patches:', num_patch)
+    # * patch補丁，但實際上沒被使用！
+    # 計算資料在經過 Patch 分段處理後，會被切成多少個時間片段（patches）。
+    # 1.) 加入局部時間資訊（例如：用一小段資料判斷未來趨勢）。
+    # 2.) 讓模型能觀察多個區間（patches）而非整體序列。
+    # 3.) 模型更容易聚焦局部資訊（短期趨勢）。
+    # 4.) 降低記憶體需求。
+    # 5.) 可以重疊（用 stride 控制），保留更多上下文。
+    # -- num_patch = (max(args.context_points, args.patch_len) - args.patch_len) // args.stride + 1 # 滑動視窗切patch，總共可以切幾段？
+    # max(args.context_points, args.patch_len)：保證序列長度至少不小於 patch 長度（安全設計）。
+    # max(...) - patch_len：可滑動的「剩餘距離」。
+    # 除以stride：每次滑 stride 那麼遠，能滑幾次？
+    # +1：加上第一次切（從 0 開始）
+    # -- print('number of patches:', num_patch) # get number of patches  EX. 模型會把一筆長為 336 的序列切成 28 段，每段 12 個時間點。
 
-    ## get model
-    model = xlstm(configs, enc_in=c_in,
-                  )
+    # todo get model
+    model = xlstm(configs, enc_in=c_in) # 把特徵數交給模型
+                                        # xlstm() 是主模型結構，搭配 xLSTMBlockStack。
     return model
 
 
