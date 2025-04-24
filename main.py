@@ -197,8 +197,11 @@ def find_lr():
 
 
 def train_func(lr=args.lr):
+    """
+    進行訓練、儲存模型權重
+    """
     # get dataloader
-    dls = get_dls(args)
+    dls = get_dls(args) # 載入訓練模型的資料。
     #print('in out', dls.vars, dls.c, dls.len)
 
     # get model
@@ -206,19 +209,20 @@ def train_func(lr=args.lr):
     #model = get_model(dls.vars, args, model_type)
 
     # get loss
-    #loss_func = torch.nn.MSELoss(reduction='mean')
-    loss_func = torch.nn.L1Loss(reduction='mean')
-    #loss_func=combined_loss
+    # Ex. loss_func = torch.nn.MSELoss(reduction='mean') 或 loss_func=combined_loss 或 loss_func = HuberLoss(delta = 0.25)
+    loss_func = torch.nn.L1Loss(reduction='mean') # 主要 loss function 為 L1Loss，也可改成 MSELoss, HuberLoss, combined_loss。
+                                                  # L1Loss 也叫作 MAE（Mean Absolute Error）。
 
-    #delta = 0.25
-    #loss_func = HuberLoss(delta)
     # get callbacks
-    cbs = [RevInCB(dls.vars)] if args.revin else []
+    cbs = [RevInCB(dls.vars)] if args.revin else [] # 使用 callback 記錄訓練過程 
+                                                    # args.revin => 判斷是否啟用 RevIN 功能。
+                                                    # RevInCB(dls.vars) => 建立一個 RevIN Callback 實例，傳入變數資訊。
+                                                    # 在 輸入前 對資料做 normalization，在 模型輸出後 還原（denormalize）預測值。
     cbs += [
-        #cbs = [
-        #PatchCB(patch_len=args.patch_len, stride=args.stride),
-        SaveModelCB(monitor='valid_loss', fname=args.save_model_name,
-                    path=args.save_path)
+        #PatchCB(patch_len=args.patch_len, stride=args.stride), # Patch-based 時間序列切片
+        SaveModelCB(monitor='valid_loss', fname=args.save_model_name, path=args.save_path) # 建立保存模型的callback，在訓練過程中自動儲存最佳模型權重檔（.pth）。
+                                                                                           # 監控「驗證集損失」的表現（valid_loss）。如果新的驗證損失比先前更好，就保存模型。
+                                                                                           # 設定 儲存的檔名 與 儲存的資料夾路徑。
     ]
 
     # define learner
@@ -229,7 +233,7 @@ def train_func(lr=args.lr):
                     )
 
     # fit the data to the model
-    learn.fit_one_cycle(n_epochs=args.n_epochs, lr_max=lr, pct_start=0.2)
+    learn.fit_one_cycle(n_epochs=args.n_epochs, lr_max=lr, pct_start=0.2) # 使用 fit_one_cycle 進行訓練，先提高學習率再慢慢降低，先升高 → 達到高峰 → 再慢慢下降。
 
 
 def test_func():
