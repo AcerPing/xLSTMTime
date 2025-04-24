@@ -328,13 +328,13 @@ if __name__ == '__main__':
         save_arguments("results", configs) # 儲存訓練參數。
         train_func(suggested_lr) # 執行訓練
 
-    else:  # testing mode
+    else:  # testing mode 執行測試與可視化
 
         out = test_func()
         print('score:', out[2])
         print('shape:', out[0].shape)
 
         for feature_idx in range(7):  # Assuming there are 7 features
-            plot_feature_actual_vs_predicted(out[1], out[0], feature_idx)
+            plot_feature_actual_vs_predicted(out[1], out[0], feature_idx) # out: a list of [pred, targ, score_values]
 
     print('----------- Complete! -----------')
