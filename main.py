@@ -320,11 +320,13 @@ def save_arguments(out_dir, args):
 
 if __name__ == '__main__':
 
-    if args.is_train:
+    if args.is_train: # 執行訓練流程
 
-        suggested_lr = find_lr()
+        suggested_lr = find_lr() # 自動尋找最適學習率
+        args.suggested_lr = suggested_lr  # 將學習率加進參數紀錄
         print('suggested lr:', suggested_lr)
-        train_func(suggested_lr)
+        save_arguments("results", configs) # 儲存訓練參數。
+        train_func(suggested_lr) # 執行訓練
 
     else:  # testing mode
 
