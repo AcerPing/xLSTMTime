@@ -260,7 +260,7 @@ def test_func():
     return out
 
 
-import matplotlib.pyplot as plt
+
 
 
 def plot_feature_actual_vs_predicted(actual, predicted, feature_idx):
