@@ -3,17 +3,13 @@ import sys
 import os
 import math
 import json
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from dataclasses import dataclass
-from einops import rearrange, repeat, einsum
-
 import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
-import os
-#import torchcd 
-from torch import nn
+
+from dataclasses import dataclass
+from einops import rearrange, repeat, einsum # ??
+
 from src.learner import Learner
 from src.callback.core import *
 from src.callback.tracking import *
@@ -21,36 +17,45 @@ from src.callback.scheduler import *
 from src.callback.patch_mask import *
 from src.callback.transforms import *
 from src.metrics import *
-from datautils import get_dls
+from datautils import get_dls # Get Data loaders：原始作者定義的載入資料模組。根據提供的參數，載入並處理對應的資料集，最後輸出 PyTorch 標準格式的 DataLoaders（訓練與測試用）。
 
 import time
-import random
-import argparse
-import datetime
-from functools import partial
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-
-import torch.backends.cudnn as cudnn
-import torch.distributed as dist
-
 from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 from timm.utils import accuracy, AverageMeter
 
+import random, datetime
+from functools import partial
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
+
+from packaging import version
+
+import torch
+from torch import nn # import torch.nn as nn
+import torch.backends.cudnn as cudnn
+import torch.distributed as dist
+import torch.nn.functional as F
 from torch.cuda.amp import GradScaler, autocast
-
-from xlstm.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
-
-from xlstm.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm.blocks.slstm.block import sLSTMBlockConfig
-from model import xlstm
-
-from utils import load_checkpoint, load_pretrained, save_checkpoint, NativeScalerWithGradNormCount, auto_resume_helper, \
-    reduce_tensor
 
 assert torch.__version__ >= '1.8.0', "DDP-based MoE requires Pytorch >= 1.8.0"
 
-from dataclasses import dataclass
+if version.parse(torch.__version__) >= version.parse("2.1.0"):
+    import torch.utils.cpp_extension # Monkey Patch to fix include_paths(cuda=True) for torch >= 2.1.0
+    # 取得原始 include_paths()，避免遞迴呼叫自己
+    _original_include_paths = torch.utils.cpp_extension.include_paths # 備份原本的 include_paths() 函式
+    def include_paths_patched(*args, **kwargs): # 攔截呼叫，把多餘的 cuda 參數去掉
+        if 'cuda' in kwargs:
+            del kwargs['cuda']  # 移除不支援的參數
+        return _original_include_paths(*args, **kwargs)
+    torch.utils.cpp_extension.include_paths = include_paths_patched # 進用新的版本取代原來的函式（Monkey Patch）
+    print("✅ Patched torch.utils.cpp_extension.include_paths successfully!")
+from model import xlstm
+from xlstm.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
+from xlstm.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm.blocks.slstm.block import sLSTMBlockConfig
+
+from utils import load_checkpoint, load_pretrained, save_checkpoint, NativeScalerWithGradNormCount, auto_resume_helper, \
+    reduce_tensor
 
 import argparse
 
