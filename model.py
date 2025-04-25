@@ -156,42 +156,42 @@ class xlstm(torch.nn.Module):
 
         
     def forward(self, x):
-        print('\n', '-----'*10, '\n')
-        print(f'輸入資料形狀: {x.shape} \n') # 輸入資料 x：形狀為 (batch_size, context_points, features)
+        # print('\n', '-----'*10, '\n') # --用於研究
+        # print(f'輸入資料形狀: {x.shape} \n') # 輸入資料 x：形狀為 (batch_size, context_points, features) # --用於研究
 
         seasonal_init, trend_init = self.decompsition(x) # 分解為 seasonal 及 trend，形狀為 (batch_size, context_points, features)
-        print(f'[decompsition]分解長期趨勢(trend): {trend_init.shape} \n')
-        print(f'[decompsition]分解短期季節(seasonal): {seasonal_init.shape} \n')
+        # print(f'[decompsition]分解長期趨勢(trend): {trend_init.shape} \n') # --用於研究
+        # print(f'[decompsition]分解短期季節(seasonal): {seasonal_init.shape} \n') # --用於研究
         seasonal_init, trend_init = seasonal_init.permute(0,2,1), trend_init.permute(0,2,1) # 形狀為 (batch_size, features, context_points)
         seasonal_output = self.Linear_Seasonal(seasonal_init) # Linear 預測 seasonal ，形狀為 (batch_size, features, target_points)。 
         trend_output = self.Linear_Trend(trend_init) # Linear 預測 trend ，形狀為 (batch_size, features, target_points)。
-        print(f'〔線性轉換〕長期趨勢(trend): {trend_output.shape} \n') 
-        print(f'〔線性轉換〕短期季節(seasonal)的: {seasonal_output.shape} \n') 
+        # print(f'〔線性轉換〕長期趨勢(trend): {trend_output.shape} \n') # --用於研究
+        # print(f'〔線性轉換〕短期季節(seasonal)的: {seasonal_output.shape} \n') # --用於研究
 
         x = seasonal_output + trend_output # trend + seasonal，形狀為 (batch_size, features, target_points)。
-        print(f'〔合併〕長期趨勢(trend)與短期季節(seasonal): {x.shape} \n')
+        # print(f'〔合併〕長期趨勢(trend)與短期季節(seasonal): {x.shape} \n') # --用於研究
 
 
         x=self.mm(x) # 接入一層 mm() 線性層：壓縮或轉換維度 
                     # self.mm = nn.Linear(features, embedding_dim)
                     # 線性轉為 embedding 維度（features → embedding_dim）
                     # linear layer（又叫 dense layer）全連接層，用來進行資料的維度轉換或特徵投影。
-        print(f'mm線性轉換: {x.shape} \n') # 形狀為 (batch_size, features, embedding_dim)
+        # print(f'mm線性轉換: {x.shape} \n') # 形狀為 (batch_size, features, embedding_dim) # --用於研究
 
         
         #x = self.batch_norm(x) # ?? 不一定需要，但可考慮加入來補強模型訓練初期的穩定性。
                                 # 可視為前處理，對每個feature channel做標準化，有可能提升模型穩定性與收斂效果，但需依任務特性測試確認。
     
         x = self.xlstm_stack(x) # 傳入 xLSTMBlockStack（核心 block），形狀為(batch_size, features, embedding_dim)
-        print(f'經過xLSTM特徵提取與時序建模: {x.shape} \n')
+        # print(f'經過xLSTM特徵提取與時序建模: {x.shape} \n') # --用於研究
         
         # 還原回 target_points （例如 96 點）
         x=self.mm2(x) # 輸出再經過 mm2()，轉為 target_points 長度，形狀為(batch_size, features, target_points)
-        print(f'mm2線性轉換: {x.shape} \n')
+        # print(f'mm2線性轉換: {x.shape} \n') # --用於研究
 
         x=x.permute(0,2,1) # 形狀為(batch_size, target_points, features)
-        print(f'最終輸出形狀: {x.shape} \n')
-        print('\n', '-----'*10, '\n')
+        # print(f'最終輸出形狀: {x.shape} \n') # --用於研究
+        # print('\n', '-----'*10, '\n') # --用於研究
 
     
         return x # 最後輸出 x：形狀為 (batch_size, target_points, features)
