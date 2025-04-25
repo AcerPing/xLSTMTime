@@ -65,7 +65,7 @@ def get_dls(params):
         root_path = '/home/musleh/Downloads/iTransformer_datasets/PEMS/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_PEMS,
+                datasetCls=Dataset_PEMS, # PEMS 路況資料（.npz 格式）
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'PEMS04.npz',  #PEMS03.npz  data.npy
@@ -81,7 +81,7 @@ def get_dls(params):
         root_path = '/home/musleh/Downloads/iTransformer_datasets/PEMS/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_PEMS,
+                datasetCls=Dataset_PEMS, # PEMS 路況資料（.npz 格式）
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'PEMS03.npz',  #PEMS03.npz  data.npy
@@ -97,7 +97,7 @@ def get_dls(params):
         root_path = '/home/musleh/Downloads/iTransformer_datasets/PEMS/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_PEMS,
+                datasetCls=Dataset_PEMS, # PEMS 路況資料（.npz 格式）
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'PEMS07.npz',  #PEMS03.npz  data.npy
@@ -113,7 +113,7 @@ def get_dls(params):
         root_path = '/home/musleh/Downloads/iTransformer_datasets/PEMS/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_PEMS,
+                datasetCls=Dataset_PEMS, # PEMS 路況資料（.npz 格式）
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'PEMS08.npz',  #PEMS03.npz  data.npy
@@ -182,7 +182,7 @@ def get_dls(params):
         root_path = 'datasets/electricity'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_Custom,
+                datasetCls=Dataset_Custom, # 通用 CSV 格式
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'electricity.csv',
@@ -199,7 +199,7 @@ def get_dls(params):
         root_path = 'datasets/traffic'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_Custom,
+                datasetCls=Dataset_Custom, # 通用 CSV 格式
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'traffic.csv',
@@ -233,7 +233,7 @@ def get_dls(params):
         root_path = 'datasets/illness'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_Custom,
+                datasetCls=Dataset_Custom, # 通用 CSV 格式
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'national_illness.csv',
@@ -250,7 +250,7 @@ def get_dls(params):
         root_path = 'datasets/exchange_rate'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_Custom,
+                datasetCls=Dataset_Custom, # 通用 CSV 格式
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'exchange_rate.csv',
