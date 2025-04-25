@@ -1,5 +1,5 @@
 __all__ = ['TrackTimerCB', 'TrackTrainingCB', 'PrintResultsCB', 'TerminateOnNaNCB',
-            'TrackerCB', 'SaveModelCB', 'EarlyStoppingCB']
+            'TrackerCB', 'SaveModelCB', 'EarlyStoppingCB', 'CSVLogger']
 
 from ..basics import *
 from .core import Callback
@@ -7,6 +7,7 @@ import torch
 import time
 import numpy as np
 from pathlib import Path
+import csv # 將訓練過程中每一個 epoch 的損失與評估指標儲存為 .csv 檔
 
 
 class TrackTimerCB(Callback):
@@ -164,6 +165,12 @@ class TerminateOnNaNCB(Callback):
 
 
 class PrintResultsCB(Callback):
+    """
+    -- Learner.recorder 儲存每一個 epoch 訓練過程中的記錄,像是: train_loss, valid_loss, mse, mae 等。
+    -- get_header()：把 recorder 的 key(指標名稱)抓出來，例如 ['train_loss', 'valid_loss', 'mse', 'mae'] + 'time'
+    -- before_fit()：在訓練一開始會印出「表頭」。
+    -- after_epoch():每次訓練完一個epoch,取出最新的數值,並使用 self.print_value.format(*epoch_logs) 印出結果。
+    """
     def __init__(self):
         super().__init__()        
 
@@ -185,18 +192,55 @@ class PrintResultsCB(Callback):
         if not hasattr(self.learner, 'recorder'): return  # don't print if there is no recorder。初始化階段（模型未經訓練），若沒有 recorder，不顯示。
         epoch_logs = []        
         for key in self.learner.recorder: # 讀取 learner.recorder 裡紀錄的數值（如 loss、metrics）
-            value=self.learner.recorder[key][-1] if self.learner.recorder[key] else None     
+            value=self.learner.recorder[key][-1] if self.learner.recorder[key] else None # 抓取每個紀錄項目中最後一筆（最新的）記錄
             epoch_logs += [value]
         if self.learner.epoch_time: epoch_logs.append(self.learner.epoch_time)
         # print('epoch_logs', epoch_logs)
-        print(self.print_value.format(*epoch_logs)) # 顯示 最後一個 epoch 結束後的輸出。
-                                                    # 第 N 個 epoch（從 0 開始）
+        print(self.print_value.format(*epoch_logs)) # 第 N 個 epoch（從 0 開始）
                                                     # 訓練集上的 loss（training loss）
                                                     # 驗證集上的 loss（validation loss）
                                                     # 評估指標 1（可能是 MSE）
                                                     # 評估指標 2（可能是 MAE）
-                                                    # 此 epoch 訓練花費時間（5 秒）
-        
+                                                    # 此 epoch 訓練花費時間（5 秒）        
+
+
+class CSVLogger(Callback):
+    """
+    將每個 epoch 的 loss 與 metrics 儲存為 CSV 檔案
+    """
+    def __init__(self, save_dir='results', filename="epoch_log.csv"):
+        super().__init__()
+        self.save_path = Path(save_dir) / filename
+        self.fields = None
+        self.file = None
+        self.writer = None
+        self.header_written = False
+
+    def before_fit(self):
+        self.save_path.parent.mkdir(parents=True, exist_ok=True)
+        self.file = open(self.save_path, mode='w', newline='')
+        self.writer = csv.writer(self.file)
+
+    def after_epoch(self):
+        if not hasattr(self.learner, 'recorder'): return
+        row = [self.epoch]
+        for key in self.learner.recorder:
+            val = self.learner.recorder[key][-1] if self.learner.recorder[key] else ''
+            row.append(val)
+
+        if self.learner.epoch_time:
+            row.append(self.learner.epoch_time)
+
+        if not self.header_written:
+            header = ['epoch'] + list(self.learner.recorder.keys()) + ['time']
+            self.writer.writerow(header)
+            self.header_written = True
+
+        self.writer.writerow(row)
+
+    def after_fit(self):
+        if self.file:
+            self.file.close()
 
 
 class TrackerCB(Callback):
