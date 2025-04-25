@@ -169,27 +169,33 @@ class PrintResultsCB(Callback):
 
     def get_header(self, recorder):        
         "recorder is a dictionary"
-        header = list(recorder.keys())        
-        return header+['time']
+        header = list(recorder.keys()) # 取出表頭  
+        return header+['time'] # 加上一個 'time'
 
     def before_fit(self):
-        if self.run_finder: return          # don't print if lr_finder is called
-        if not hasattr(self.learner, 'recorder'): return      # don't print if there is no recorder
-        header = self.get_header(self.learner.recorder)
-        self.print_header = '{:>15s}'*len(header)   
-        self.print_value = '{:>15d}' + '{:>15.6f}'*(len(header)-2) + '{:>15}'        
+        if self.run_finder: return # don't print if lr_finder is called。若是 lr_finder() 階段，不顯示。
+        if not hasattr(self.learner, 'recorder'): return      # don't print if there is no recorder。若沒有 recorder，不顯示。
+        header = self.get_header(self.learner.recorder) # 會從 recorder 裡面抓出紀錄的 key。
+        self.print_header = '{:>15s}'*len(header) # 靠右對齊、寬度為 15（不夠就補空格）、這欄是字串（string）。
+        self.print_value = '{:>15d}' + '{:>15.6f}'*(len(header)-2) + '{:>15}' # 用來輸出每行「數值」的格式
         print(self.print_header.format(*header))        
     
     def after_epoch(self):      
-        if self.run_finder: return      # don't print if lr_finder is called
-        if not hasattr(self.learner, 'recorder'): return           # don't print if there is no recorder
+        if self.run_finder: return # don't print if lr_finder is called。若是學習率尋找模式，不顯示結果。避免在 lr_finder()（尋找學習率階段）時，印出多餘的資訊。
+        if not hasattr(self.learner, 'recorder'): return  # don't print if there is no recorder。初始化階段（模型未經訓練），若沒有 recorder，不顯示。
         epoch_logs = []        
-        for key in self.learner.recorder:
-            value=self.learner.recorder[key][-1] if self.learner.recorder[key] else None            
+        for key in self.learner.recorder: # 讀取 learner.recorder 裡紀錄的數值（如 loss、metrics）
+            value=self.learner.recorder[key][-1] if self.learner.recorder[key] else None     
             epoch_logs += [value]
         if self.learner.epoch_time: epoch_logs.append(self.learner.epoch_time)
         # print('epoch_logs', epoch_logs)
-        print(self.print_value.format(*epoch_logs))
+        print(self.print_value.format(*epoch_logs)) # 顯示 最後一個 epoch 結束後的輸出。
+                                                    # 第 N 個 epoch（從 0 開始）
+                                                    # 訓練集上的 loss（training loss）
+                                                    # 驗證集上的 loss（validation loss）
+                                                    # 評估指標 1（可能是 MSE）
+                                                    # 評估指標 2（可能是 MAE）
+                                                    # 此 epoch 訓練花費時間（5 秒）
         
 
 
