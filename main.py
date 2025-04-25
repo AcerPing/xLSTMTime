@@ -220,9 +220,10 @@ def train_func(lr=args.lr):
                                                     # 在 輸入前 對資料做 normalization，在 模型輸出後 還原（denormalize）預測值。
     cbs += [
         #PatchCB(patch_len=args.patch_len, stride=args.stride), # Patch-based 時間序列切片
-        SaveModelCB(monitor='valid_loss', fname=args.save_model_name, path=args.save_path) # 建立保存模型的callback，在訓練過程中自動儲存最佳模型權重檔（.pth）。
+        SaveModelCB(monitor='valid_loss', fname=args.save_model_name, path=args.save_path), # 建立保存模型的callback，在訓練過程中自動儲存最佳模型權重檔（.pth）。
                                                                                            # 監控「驗證集損失」的表現（valid_loss）。如果新的驗證損失比先前更好，就保存模型。
                                                                                            # 設定 儲存的檔名 與 儲存的資料夾路徑。
+        CSVLogger(save_dir='results', filename='epoch_log.csv')  # 將訓練過程中每一個epoch的損失與評估指標儲存為 .csv 檔
     ]
 
     # define learner
