@@ -263,8 +263,9 @@ def get_dls(params):
                 workers=params.num_workers,
                 )
     # dataset is assume to have dimension len x nvars
-    dls.vars, dls.len = dls.train.dataset[0][0].shape[1], params.context_points
-    dls.c = dls.train.dataset[0][1].shape[0]
+    dls.vars, dls.len = dls.train.dataset[0][0].shape[1], params.context_points # dls.vars → 特徵數量（features）
+                                                                                # dls.len → 輸入長度（context）
+    dls.c = dls.train.dataset[0][1].shape[0] # 預測值的特徵數（通常與 vars 相同）
     return dls
 
 
@@ -283,3 +284,11 @@ if __name__ == "__main__":
     #for i, batch in enumerate(dls.valid):
     #    print(i, len(batch), batch[0].shape, batch[1].shape)
     #breakpoint()
+
+
+"""
+① 讀取資料集
+② 切分資料
+③ 做前處理
+④ 建立 DataLoader
+"""
