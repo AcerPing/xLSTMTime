@@ -9,29 +9,41 @@ from src.data.pred_dataset import *
 
 DSETS = ['ettm1','Solar','PEMS03','PEMS04','PEMS07','PEMS08', 'ettm2', 'etth1', 'etth2', 'electricity',
          'traffic', 'illness', 'weather', 'exchange'
-        ]
+        ] # 原始作者預設支援多種 benchmark 資料集，包括交通、電力等知名公開資料集。 或許 可以用同一套主程式與模型結構，快速替換不同資料集。
+# 1. ettm1, ettm2, etth1, etth2 ->	ETT 系列資料（電力需求、負載）
+# 2. Solar, electricity ->	能源類資料
+# 3. traffic, PEMS03~08 -> 交通路況資料
+# 4. weather -> 天氣氣象資料
+# 5. exchange -> 匯率資料（金融）
+# 6. exchange -> 匯率資料（金融）
 
 def get_dls(params):
     
     assert params.dset in DSETS, f"Unrecognized dset (`{params.dset}`). Options include: {DSETS}"
     if not hasattr(params,'use_time_features'): params.use_time_features = True
 
-    if params.dset == 'ettm1':
-        root_path = 'datasets/ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_minute,
+    if params.dset == 'ettm1': #  判斷目前指定的資料集是否為 'ettm1'
+        root_path = 'datasets/ETT-small/' # 資料的資料夾路徑，表示原始的 ETTm1.csv 放在 datasets/ETT-small/ 裡。
+        size = [params.context_points, 0, params.target_points] # size 定義輸入輸出長度
+                                                                # context_points：輸入的歷史步數，例如過去 336 分鐘。
+                                                                # 0：預留（目前沒使用，通常是預測前的空窗）預設不使用，即模型直接根據過去的資料預測未來資料。
+                                                                # target_points：模型要預測未來幾點，例如未來 96 點。
+                                                                #  xLSTM 這種結構可以直接輸入 context → 預測 target，因此中間 label 可省略。
+        dls = DataLoaders( # 建立資料加載器
+                datasetCls=Dataset_ETT_minute, # ETT 分鐘級資料專用
                 dataset_kwargs={
                 'root_path': root_path,
                 'data_path': 'ETTm1.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
+                'features': params.features, # 'M' 表示多變量（multivariate）
+                'scale': True, # 是否標準化
+                'size': size, # 對應的輸入/輸出長度
+                'use_time_features': params.use_time_features # 是否加上時間欄位（例如週期性特徵）
                 },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+                batch_size=params.batch_size, # 批次大小
+                workers=params.num_workers, # 執行緒數
+                ) # 給定 Dataset 所需的參數，包括資料檔名、標準化、是否加入時間特徵（如小時、週期）、資料切分長度（size），最後交由 DataLoaders() 包裝成 PyTorch 用的訓練與測試資料迭代器。
+
+
 
     elif params.dset == 'Solar':
         root_path = '/home/musleh/Downloads/iTransformer_datasets/Solar'
