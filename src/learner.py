@@ -1,7 +1,7 @@
 
 from typing import List
 import torch
-from torch.optim import Adam
+from torch.optim import Adam # -- SGD, RMSprop, Adadelta, Adagrad, RMSprop
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from torch.cuda.amp import GradScaler, autocast
