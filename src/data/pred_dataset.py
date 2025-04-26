@@ -110,7 +110,19 @@ class Dataset_ETT_hour(Dataset):
 # ---------------------------------------------------------------------------------------------------------------
 
 
+# todo 【2】 Dataset_ETT_minute
 class Dataset_ETT_minute(Dataset):
+    """"
+    -- root_path: 資料檔所在資料夾路徑。
+    -- split: 資料分割類別：'train'、'val'、'test'
+    -- size: [seq_len, label_len, pred_len]
+    -- features: 'S'表示單變數，'M'表示多變數。
+    -- data_path: 檔案名稱。
+    -- scale: 是否標準化資料。
+    -- timeenc: 時間編碼方式, 0(簡單時間欄位), 1(sin/cos)
+    -- freq: 時間頻率，如 t = 每分鐘。
+    -- use_time_features: 是否加入時間欄位特徵。
+    """
     def __init__(self, root_path, split='train', size=None,
                  features='S', data_path='ETTm1.csv',
                  target='OT', scale=True, timeenc=0, freq='t',
@@ -119,16 +131,17 @@ class Dataset_ETT_minute(Dataset):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
-            self.seq_len = 24 * 4 * 4
-            self.label_len = 24 * 4
-            self.pred_len = 24 * 4
+            self.seq_len = 24 * 4 * 4 # 4 天
+            self.label_len = 24 * 4 # 1 天
+            self.pred_len = 24 * 4 # 1 天
         else:
-            self.seq_len = size[0]
-            self.label_len = size[1]
-            self.pred_len = size[2]
+            self.seq_len = size[0] # 模型輸入長度（context），預設336。
+            self.label_len = size[1] # 0
+            self.pred_len = size[2] # 要預測的未來時間步，預設96。
+
         # init
-        assert split in ['train', 'test', 'val']
-        type_map = {'train': 0, 'val': 1, 'test': 2}
+        assert split in ['train', 'test', 'val'] # 檢查條件是否成立。如果 split 的值不是 'train'、'test' 或 'val'，就會丟出錯誤。
+        type_map = {'train': 0, 'val': 1, 'test': 2} # 切資料區段：train/val/test
         self.set_type = type_map[split]
 
         self.features = features
@@ -144,11 +157,18 @@ class Dataset_ETT_minute(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path)) # 讀取 ETT 資料（含 'date' 與多個特徵）
 
-        border1s = [0, 12 * 30 * 24 * 4 - self.seq_len, 12 * 30 * 24 * 4 + 4 * 30 * 24 * 4 - self.seq_len]
-        border2s = [12 * 30 * 24 * 4, 12 * 30 * 24 * 4 + 4 * 30 * 24 * 4, 12 * 30 * 24 * 4 + 8 * 30 * 24 * 4]
+        border1s = [0, # train 起點
+                    12 * 30 * 24 * 4 - self.seq_len, # val 起點
+                    12 * 30 * 24 * 4 + 4 * 30 * 24 * 4 - self.seq_len # test 起點
+                    ]
+        border2s = [12 * 30 * 24 * 4,  # train 結束
+                    12 * 30 * 24 * 4 + 4 * 30 * 24 * 4, # val 結束
+                    12 * 30 * 24 * 4 + 8 * 30 * 24 * 4 # test 結束
+                    ]
+        # 12 個月（假設每月 30 天），每天 24 小時，每小時 4 筆資料（因為資料是 15 分鐘一次） => 這是 一年（12 個月）× 每小時 4 筆 = 一整年的資料長度。
+        # 前 12 個月 → 訓練集；接著 4 個月 → 驗證集；再來 4 個月 → 測試集。
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
 
@@ -158,7 +178,7 @@ class Dataset_ETT_minute(Dataset):
         elif self.features == 'S':
             df_data = df_raw[[self.target]]
 
-        if self.scale:
+        if self.scale: # 只以 train 資料進行標準化，確保測試集未洩漏。
             train_data = df_data[border1s[0]:border2s[0]]
             self.scaler.fit(train_data.values)
             data = self.scaler.transform(df_data.values)
@@ -167,7 +187,7 @@ class Dataset_ETT_minute(Dataset):
 
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
-        if self.timeenc == 0:
+        if self.timeenc == 0: # 把 'date' 欄位轉成時間欄位（若 timeenc = 0）
             df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
             df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
             df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
@@ -183,21 +203,21 @@ class Dataset_ETT_minute(Dataset):
         self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
 
-    def __getitem__(self, index):
+    def __getitem__(self, index): # 每次抓一段資料，每訓練一筆都會呼叫一次。 在 DataLoader 載入每一筆訓練資料時，實際會呼叫的函數。
         s_begin = index
-        s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
-        r_end = r_begin + self.label_len + self.pred_len
+        s_end = s_begin + self.seq_len # 0 + 336 = 336
+        r_begin = s_end - self.label_len # 336 - 0 = 336
+        r_end = r_begin + self.label_len + self.pred_len # 336 + 0 + 96 = 432
 
-        seq_x = self.data_x[s_begin:s_end]
-        seq_y = self.data_y[r_begin:r_end]
-        seq_x_mark = self.data_stamp[s_begin:s_end]
-        seq_y_mark = self.data_stamp[r_begin:r_end]
+        seq_x = self.data_x[s_begin:s_end] # x：輸入序列 [index : index + 336]
+        seq_y = self.data_y[r_begin:r_end] # y：預測目標 [336 : 432]
+        seq_x_mark = self.data_stamp[s_begin:s_end] # 輸入時間特徵（如有）
+        seq_y_mark = self.data_stamp[r_begin:r_end] # 預測時間特徵（如有）
 
         if self.use_time_features: return _torch(seq_x, seq_y, seq_x_mark, seq_y_mark)
         else: return _torch(seq_x, seq_y)
 
-    def __len__(self):
+    def __len__(self): # 決定總共有幾筆樣本
         return len(self.data_x) - self.seq_len - self.pred_len + 1
 
     def inverse_transform(self, data):
