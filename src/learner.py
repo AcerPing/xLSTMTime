@@ -22,6 +22,14 @@ from unittest.mock import patch
 
 
 class Learner(GetAttr):
+    """
+    -- dls: 資料集、Dataloader
+    -- model: 主模型(xLSTM)
+    -- loss_func: 損失函數
+    -- opt: 優化器(Adam)
+    -- callbacks: 訓練流程控制（如 early stopping、save model)
+    -- metrics: 評估指標(MSE、MAE)
+    """
 
     def __init__(self, dls, model, 
                         loss_func=None, 
@@ -29,7 +37,7 @@ class Learner(GetAttr):
                         cbs=None, 
                         metrics=None, 
                         opt_func=Adam,
-                        **kwargs):
+                        **kwargs): # 初始化資料集、模型、Loss、Optimizer、Callbacks
                 
         self.model, self.dls, self.loss_func, self.lr = model, dls, loss_func, lr
         self.opt_func = opt_func
@@ -85,8 +93,10 @@ class Learner(GetAttr):
         for cb in cb_list: self.remove_callback(cb)
 
 
-    def fit(self, n_epochs, lr=None, cbs=None, do_valid=True):
-        " fit the model "
+    def fit(self, n_epochs, lr=None, cbs=None, do_valid=True): 
+        """ 
+        fit the model 負責整體訓練過程
+        """"
         self.n_epochs = n_epochs
         if not self.dls.valid: do_valid = False
         if cbs: self.add_callbacks(cbs)
@@ -104,7 +114,10 @@ class Learner(GetAttr):
         self('after_fit')
 
 
-    def fit_one_cycle(self, n_epochs, lr_max=None, pct_start=0.3):
+    def fit_one_cycle(self, n_epochs, lr_max=None, pct_start=0.3): 
+        """
+        One Cycle Learning Rate(OneCycleLR): 學習率策略，「先提高學習率再慢慢降低」的學習率變化方式，幫助模型走出困境區、找到更好的參數組合。
+        """
         self.n_epochs = n_epochs        
         self.lr_max = lr_max if lr_max else self.lr
         cb = OneCycleLR(lr_max=self.lr_max, pct_start=pct_start)
@@ -170,7 +183,10 @@ class Learner(GetAttr):
         # update weights
         self.opt.step() 
 
-    def train_step(self, batch):
+    def train_step(self, batch): 
+        """
+        每個 batch 的前向傳遞與 loss 計算
+        """
         # get the inputs
         self.xb, self.yb = batch
         # forward
@@ -189,7 +205,10 @@ class Learner(GetAttr):
         # forward + calculate loss
         self.pred, self.loss = self.valid_step(self.batch)     
 
-    def valid_step(self, batch):
+    def valid_step(self, batch): 
+        """
+        每個 batch 的前向傳遞與 loss 計算
+        """
         # get the inputs
         self.xb, self.yb = batch
         # forward
@@ -231,7 +250,7 @@ class Learner(GetAttr):
         self('after_predict')
 
 
-    def predict(self, test_data, weight_path=None, Dataset=None, Dataloader=None, batch_size=None):
+    def predict(self, test_data, weight_path=None, Dataset=None, Dataloader=None, batch_size=None): # 推論流程
         """_summary_
         Args:
             test_data can be a tensor, numpy array, dataset or dataloader
@@ -247,7 +266,7 @@ class Learner(GetAttr):
         return to_numpy(self.preds) 
    
     
-    def test(self, dl, weight_path=None, scores=None):
+    def test(self, dl, weight_path=None, scores=None): # 測試流程
         """_summary_
         Args:
             test_data can be a tensor, numpy array, dataset or dataloader
@@ -329,9 +348,10 @@ class Learner(GetAttr):
         self.fit_one_cycle(n_epochs, lr_max=base_lr, pct_start=pct_start)
     
 
-    def lr_finder(self, start_lr=1e-7, end_lr=10, num_iter=100, step_mode='exp', show_plot=True, suggestion='valley'):                
+    def lr_finder(self, start_lr=1e-7, end_lr=10, num_iter=100, step_mode='exp', show_plot=True, suggestion='valley'): 
         """
         find the learning rate
+        自動尋找適合的學習率
         """
         n_epochs = num_iter//len(self.dls.train) + 1
         # indicator of lr_finder method is applied
@@ -373,6 +393,7 @@ class Learner(GetAttr):
     def save(self, fname, path, **kwargs):
         """
         Save model and optimizer state (if `with_opt`) to `self.path/file`
+        儲存模型參數
         """
         fname = join_path_file(fname, path, ext='.pth')        
         save_model(fname, self.model, getattr(self,'opt',None), **kwargs)
@@ -382,6 +403,7 @@ class Learner(GetAttr):
     def load(self, fname, with_opt=False, device='cuda', strict=True, **kwargs):
         """
         load the model
+        載入模型參數
         """
         if not torch.cuda.is_available():
             device = "cpu"
