@@ -21,28 +21,6 @@ from sklearn.base import BaseEstimator
 from unittest.mock import patch
 
 
-
-from typing import List
-import torch
-from torch.optim import Adam
-from torch import nn
-from torch.nn.parallel import DistributedDataParallel
-
-from .basics import *
-from .callback.core import * 
-from .callback.tracking import * 
-from .callback.scheduler import *
-from .callback.distributed import *
-from .utils import *
-from pathlib import Path
-from tqdm import tqdm
-
-import numpy as np
-
-from sklearn.base import BaseEstimator
-from unittest.mock import patch
-
-
 class Learner(GetAttr):
 
     def __init__(self, dls, model, 
