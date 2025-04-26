@@ -1,0 +1,204 @@
+{
+
+  "better-comments.tags": [
+    {
+      "tag": "!",
+      "color": "#FF5555", // d9444a
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": true, // false
+      "italic": false,
+    },// 警告
+    {
+      "tag": "?",
+      "color": "#8BE9FD", // f5c018
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": true, // false
+    }, // 問題
+    {
+      "tag": "//",
+      "color": "#474747",
+      "strikethrough": true,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    }, // 廢棄的想法已改變。不刪除，但提醒自己已無效或過期。
+
+    {
+      "tag": "-",
+      "color": "#6D8CB4", // 藍灰色系
+      "strikethrough": false,
+      "backgroundColor": "transparent"
+    }, // 
+    {
+      "tag": "--",
+      "color": "#C2F0FF", // 淺藍色
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": true,
+      "italic": false
+    },
+
+    {
+      "tag": "todo",
+      "color": "#D4AF37", // 亮金黃色
+      "backgroundColor": "transparent",
+      "bold": true,
+    },    
+    {
+      "tag": "*",
+      "color": "#98C379",
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    }, // 強調
+    { "tag": "**", "color": "#50FA7B" }, // 核心原則、不可省略
+    {
+      "tag": ">",
+      "color": "#fff",
+      "strikethrough": false,
+      "backgroundColor": "transparent"
+    }, // 引用說明或筆記，轉述原始來源或第三方意見。 EX. 這裡的演算法是參考 Paper [12] 的設計
+    {
+      "tag": ">>",
+      "color": "#bbbbbb",
+      "italic": true
+    } // 輕量補充、註解中註解
+  ],
+  
+  // 啟用 TODO Highlight
+  "todo-highlight.isEnable": true,
+
+  // 編輯器外觀與字體風格
+  "editor.fontSize": 14, // 設定字體大小為 14pt。這是多數人覺得剛好不會太小也不佔空間的常用大小。
+  "editor.lineHeight": 22, // 設定行高為 22 像素，也就是每行上下的留白高度。
+  "editor.letterSpacing": 0.5, //  設定字母之間的間距（單位：像素）
+  "editor.fontFamily": "Fira Code, 'JetBrains Mono', Consolas, 'Courier New', monospace", // 設定編輯器字體
+                                                                        //  Fira Code 支援程式碼連字（像 =>, !=, === 會變好看）
+  "editor.fontLigatures": true, // 開啟「字體連字（Ligature）」功能，這是 Fira Code 的一大亮點。
+  "editor.bracketPairColorization.enabled": true,
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.renderWhitespace": "boundary",
+  "editor.renderWhitespace": "selection",
+  "editor.cursorStyle": "line",
+  "editor.tabSize": 4,
+  "editor.detectIndentation": true,
+
+  "todo-tree.filtering.scopes": [
+  ],
+  "todo-tree.highlights.customHighlight": {
+  "-": {
+      "background": "#222",
+      "foreground": "#6D8CB4",
+      "iconColour": "#6D8CB4",
+      "icon": "check",
+      "type": "text-and-comment",
+      "hideFromTree": true
+  },
+  "!": {
+      "background": "#222",
+      "foreground": "#d9444a",
+      "iconColour": "#d9444a",
+      "icon": "check",
+      "type": "text-and-comment",
+      "hideFromTree": true
+  },
+  "?": {
+      "background": "#222",
+      "foreground": "#f5c018",
+      "iconColour": "#f5c018",
+      "icon": "check",
+      "type": "text-and-comment",
+      "hideFromTree": true
+  },
+  ">": {
+      "background": "#222",
+      "foreground": "#fff",
+      "iconColour": "#fff",
+      "icon": "check",
+      "type": "text-and-comment",
+      "hideFromTree": true
+  },
+  "TODO": {
+      "background": "#f5c018",
+      "foreground": "#000",
+      "iconColour": "#f5c018",
+      "icon": "check",
+      "type": "text-and-comment"
+  },
+  "FIXME": {
+      "background": "#d9444a",
+      "foreground": "#000",
+      "iconColour": "#d9444a",
+      "type": "text-and-comment"
+  }
+  },
+  "todo-tree.general.statusBar": "tags",
+  "todo-tree.general.tagGroups": {},
+  "todo-tree.general.tags": ["-", "!", "?", ">", "TODO","FIXME"],
+
+  "todo-highlight.include": [
+    "**/*.py", 
+    "**/*.txt", 
+    "**/*.ipynb",
+    "**/*.md",
+    "**/*.js",
+  ],
+
+  // 針對 -- 開頭的註解，用淺藍色標示
+  "todo-highlight.regex": [
+    {
+      "pattern": "#\\s*--.*", 
+      "color": "#C2F0FF",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#5EC6FF",
+      "isCaseSensitive": false
+    }
+  ],
+
+  // 主題與外觀
+  "workbench.colorCustomizations": {
+    "[Material Theme*]": {
+      "activityBarBadge.background": "#616161",
+      "activityBar.activeBorder": "#616161",
+      "list.activeSelectionForeground": "#616161",
+      "list.inactiveSelectionForeground": "#616161",
+      "list.highlightForeground": "#616161",
+      "scrollbarSlider.activeBackground": "#61616150",
+      "editorSuggestWidget.highlightForeground": "#616161",
+      "textLink.foreground": "#616161",
+      "progressBar.background": "#616161",
+      "pickerGroup.foreground": "#616161",
+      "tab.activeBorder": "#616161",
+      "notificationLink.foreground": "#616161",
+      "editorWidget.resizeBorder": "#616161",
+      "editorWidget.border": "#616161",
+      "settings.modifiedItemIndicator": "#616161",
+      "settings.headerForeground": "#616161",
+      "panelTitle.activeBorder": "#616161",
+      "breadcrumb.activeSelectionForeground": "#616161",
+      "menu.selectionForeground": "#616161",
+      "menubar.selectionForeground": "#616161",
+      "editor.findMatchBorder": "#616161",
+      "selection.background": "#61616140",
+      "statusBarItem.remoteBackground": "#616161"
+    },
+    "editorLineNumber.foreground": "#6272A4",
+    "editorCursor.foreground": "#FF79C6",
+    "editor.selectionBackground": "#44475A99",
+    "editor.inactiveSelectionBackground": "#282A3690",
+    "editorIndentGuide.activeBackground": "#BD93F9",
+    "editorWhitespace.foreground": "#44475A"
+  },
+  "workbench.iconTheme": "eq-material-theme-icons", // material-icon-theme
+  "workbench.colorTheme": "Material Theme Ocean High Contrast",
+
+}
