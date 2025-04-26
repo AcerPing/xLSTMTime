@@ -96,7 +96,7 @@ class Learner(GetAttr):
     def fit(self, n_epochs, lr=None, cbs=None, do_valid=True): 
         """ 
         fit the model 負責整體訓練過程
-        """"
+        """
         self.n_epochs = n_epochs
         if not self.dls.valid: do_valid = False
         if cbs: self.add_callbacks(cbs)
