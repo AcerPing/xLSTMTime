@@ -12,6 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
+# todo 【1】 Dataset_ETT_hour
 class Dataset_ETT_hour(Dataset):
     def __init__(self, root_path, split='train', size=None,
                  features='S', data_path='ETTh1.csv',
@@ -102,6 +103,11 @@ class Dataset_ETT_hour(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+    
+
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
 
 
 class Dataset_ETT_minute(Dataset):
@@ -197,7 +203,13 @@ class Dataset_ETT_minute(Dataset):
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
 
+    
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
 
+
+# todo 【3】 Dataset_Custom
 class Dataset_Custom(Dataset):
     def __init__(self, root_path, split='train', size=None,
                  features='S', data_path='ETTh1.csv',
@@ -304,15 +316,14 @@ class Dataset_Custom(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+
     
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
 
 
-import torch
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import Dataset
-
+# todo 【4】 Dataset_PEMS
 class Dataset_PEMS(Dataset):
     def __init__(self, root_path, split='train', size=None,
                  features='S', data_path='ETTh1.csv',
@@ -406,6 +417,13 @@ class Dataset_PEMS(Dataset):
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
 
+
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+
+
+# todo 【5】 Dataset_Solar
 class Dataset_Solar(Dataset):
     def __init__(self, root_path, split='train', size=None,
                  features='S', data_path='ETTh1.csv',
@@ -493,6 +511,12 @@ class Dataset_Solar(Dataset):
         return self.scaler.inverse_transform(data)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+
+
+# todo 【6】 Dataset_Pred
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, split='pred', size=None,
                  features='S', data_path='ETTh1.csv',
@@ -597,6 +621,11 @@ class Dataset_Pred(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
 
 
 def _torch(*dfs):
