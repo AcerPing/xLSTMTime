@@ -8,8 +8,8 @@ from src.data.datamodule import DataLoaders
 from src.data.pred_dataset import *
 
 DSETS = ['ettm1','Solar','PEMS03','PEMS04','PEMS07','PEMS08', 'ettm2', 'etth1', 'etth2', 'electricity',
-         'traffic', 'illness', 'weather', 'exchange'
-        ] # 原始作者預設支援多種 benchmark 資料集，包括交通、電力等知名公開資料集。 或許 可以用同一套主程式與模型結構，快速替換不同資料集。
+         'traffic', 'illness', 'weather', 'exchange'] # 原始作者預設支援多種 benchmark 資料集，包括交通、電力等知名公開資料集。 或許 可以用同一套主程式與模型結構，快速替換不同資料集。
+
 # 1. ettm1, ettm2, etth1, etth2 ->	ETT 系列資料（電力需求、負載）
 # 2. Solar, electricity ->	能源類資料
 # 3. traffic, PEMS03~08 -> 交通路況資料
@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
 
 """
-① 讀取資料集
+① 判斷資料集類型，讀取資料集。
 ② 切分資料
 ③ 做前處理
 ④ 建立 DataLoader
