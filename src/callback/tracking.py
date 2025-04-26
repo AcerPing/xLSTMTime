@@ -223,16 +223,18 @@ class CSVLogger(Callback):
 
     def after_epoch(self):
         if not hasattr(self.learner, 'recorder'): return
-        row = [self.epoch]
+        row = []
         for key in self.learner.recorder:
-            val = self.learner.recorder[key][-1] if self.learner.recorder[key] else ''
+            val = self.learner.recorder[key][-1] 
+            if hasattr(val, "item"):
+                val = val.item()  # EX. 將 tensor(0.35) 轉成 0.35
             row.append(val)
 
         if self.learner.epoch_time:
             row.append(self.learner.epoch_time)
 
         if not self.header_written:
-            header = ['epoch'] + list(self.learner.recorder.keys()) + ['time']
+            header = list(self.learner.recorder.keys()) + ['time']
             self.writer.writerow(header)
             self.header_written = True
 
